@@ -1,22 +1,25 @@
 name: Docker Image Security Scan
-on: [push]  # Se ejecuta al hacer git push
+on: [push]
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  
 
-      - name: Install Trivy
+      - name: Scan and Generate Report
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install -y trivy
+          docker run --rm aquasec/trivy image \
+            --severity CRITICAL\
+            --exit-code 1 \
+            --format table \
+            vulnerables/web-dvwa | tee trivy-report.txt
+          echo "Vulnerabilidades encontradas (workflow configurado para fallar)"
 
-      - name: Scan Docker Image
-        run: |
-          trivy image --severity CRITICAL --exit-code 1 vulnerables/web-dvwa
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v4  # ¡Versión corregida!
+        with:
+          name: trivy-results
+          path: trivy-report.txt
