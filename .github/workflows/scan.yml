@@ -1,13 +1,6 @@
-name: Docker Image Security Scan
-on: [push]
-
-jobs:
-  scan:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Scan Docker Image
-        run: |
-          docker run --rm aquasec/trivy image --severity CRITICAL,HIGH vulnerables/web-dvwa
+- name: Scan Docker Image
+  run: |
+    docker run --rm aquasec/trivy image \
+      --severity HIGH,CRITICAL \
+      --exit-code 1 \  # Fuerza fallo si hay vulnerabilidades
+      vulnerables/web-dvwa
