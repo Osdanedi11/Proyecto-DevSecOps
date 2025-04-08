@@ -6,20 +6,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v4
 
-      - name: Scan and Generate Report
+      - name: Scan Docker Image
         run: |
           docker run --rm aquasec/trivy image \
-            --severity CRITICAL\
+            --severity CRITICAL,HIGH \
             --exit-code 1 \
             --format table \
             vulnerables/web-dvwa | tee trivy-report.txt
-          echo "Vulnerabilidades encontradas (workflow configurado para fallar)"
+          echo "Vulnerabilidades detectadas (workflow configurado para fallar)"
+          exit 1  # Fuerza el fallo
 
       - name: Upload Report
         if: always()
-        uses: actions/upload-artifact@v4  # ¡Versión corregida!
+        uses: actions/upload-artifact@v4
         with:
           name: trivy-results
           path: trivy-report.txt
